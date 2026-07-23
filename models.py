@@ -16,12 +16,6 @@ class User(Base):
 
     filename : Mapped[str | None] = mapped_column(String(100),nullable=True,default=None)
 
-    # commenting this out and below cuz alembic doesnt see this as column so either i create a column with actual s3 path now and set default to a local image path or just ignore filepath cuz filename is enough
-    # @property
-    # def filepath(self) -> str:
-    #     if self.filename:
-    #         return f"profile_pics/Pics/{self.filename}"
-    #     return 'default/default_pfp_pics/Default_pfp.jpg'
 
     projects : Mapped[list[Project]] = relationship(back_populates="user", cascade="all, delete-orphan") 
     api_keys : Mapped[list[APIKey]] = relationship(back_populates="user", cascade="all, delete-orphan") 
@@ -35,10 +29,10 @@ class Project(Base):
     description: Mapped[str] = mapped_column(String(200), nullable=True , default="No description provided")
     user_id: Mapped[int] = mapped_column(ForeignKey("users.user_id"), nullable=False)
     created_at : Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
-    rpm_limit: Mapped[int] = mapped_column(Integer, nullable=False, default=50) # requests per minute limit for the project
-    rpd_limit: Mapped[int] = mapped_column(Integer, nullable=False, default=800) # requests per day limit for the project
-    token_limit_day: Mapped[int] = mapped_column(Integer, nullable=False, default=100000) # token limit for the project
-    token_limit_minute: Mapped[int] = mapped_column(Integer, nullable=False, default=4000) # token limit for the project
+    rpm: Mapped[int] = mapped_column(Integer, nullable=False, default=50) # requests per minute limit for the project
+    rpd: Mapped[int] = mapped_column(Integer, nullable=False, default=600) # requests per day limit for the project
+    tpd: Mapped[int] = mapped_column(Integer, nullable=False, default=50000) # token limit for the project
+    tpm: Mapped[int] = mapped_column(Integer, nullable=False, default=2000) # token limit for the project
 
     user : Mapped[User] = relationship(back_populates="projects")
     api_keys : Mapped[list[APIKey]] = relationship(back_populates="project", cascade="all, delete-orphan")
@@ -63,8 +57,9 @@ class Providers(Base):
     provider_id : Mapped[int] = mapped_column(Integer,primary_key=True,index=True)
     name : Mapped[str] = mapped_column(String(100), nullable=False)
     description : Mapped[str] = mapped_column(String(200), nullable=True,default="No description provided")
-    global_rpm: Mapped[int] = mapped_column(Integer, nullable=False,default=50) # global requests per minute limit for the provider
-    global_rpd: Mapped[int] = mapped_column(Integer, nullable=False,default=800) # global requests per day limit for the provider
+
+    models : Mapped[list[Models]] = relationship(back_populates='provider',cascade="all, delete-orphan") 
+    
 
 class Logs(Base):
     __tablename__ = "logs"
@@ -72,7 +67,7 @@ class Logs(Base):
     request_id : Mapped[int] = mapped_column(Integer,primary_key=True,index=True)
     user_id : Mapped[int] = mapped_column(ForeignKey("users.user_id"), nullable=False,index=True)
     project_id : Mapped[int] = mapped_column(ForeignKey("projects.project_id"), nullable=False,index=True)
-    provider_id : Mapped[int] = mapped_column(ForeignKey("providers.provider_id"), nullable=False,index=True)
+    model_id : Mapped[int] = mapped_column(ForeignKey("models.model_id"), nullable=False,index=True)
     request_time : Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
     prompt_token : Mapped[int] = mapped_column(Integer,nullable=True)
     response_token : Mapped[int] = mapped_column(Integer,nullable=True)
@@ -92,3 +87,16 @@ class ResetPasswordToken(Base):
     created_at : Mapped[datetime] = mapped_column(DateTime(timezone=True),default=lambda:datetime.now(UTC))
 
     user : Mapped[User] = relationship(back_populates='reset_password_tokens')
+
+class Models(Base):
+    __tablename__ = "models"
+
+    model_id : Mapped[int] = mapped_column(Integer,primary_key=True,index=True)
+    model_name : Mapped[str] = mapped_column(String,unique=True,nullable=False)
+    global_rpm: Mapped[int] = mapped_column(Integer, nullable=False,default=80) # global requests per minute limit for the provider
+    global_rpd: Mapped[int] = mapped_column(Integer, nullable=False,default=900) # global requests per day limit for the provider
+    global_tpm: Mapped[int] = mapped_column(Integer, nullable=False,default=5000) # global tokens per minute limit for the provider
+    global_tpd: Mapped[int] = mapped_column(Integer, nullable=False,default=99000) # global tokens per day limit for the provider
+    provider_id : Mapped[int] = mapped_column(ForeignKey('providers.provider_id'),nullable=False,index=True)
+
+    provider : Mapped[Providers] = relationship(back_populates="models")

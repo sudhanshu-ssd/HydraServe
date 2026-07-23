@@ -2,6 +2,9 @@ from pydantic import BaseModel, ConfigDict, Field,EmailStr
 
 class UserPrompt(BaseModel):
     prompt: str = Field(..., description="The user's prompt",max_length=1000) # will prolly remove the max_length constraint later, but for now, let's keep it to avoid groq rate limits
+    model : str | None = Field(default="openai/gpt-oss-120b",description="the model sent by the user")
+    model_temp : int | None = Field(default=0,description="temperature sent by th euser for the model")
+
 
 class UserPromptResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -50,3 +53,11 @@ class ResetPassword(BaseModel):
 class ChangePassword(BaseModel):
     old_password : str = Field(...,min_length=1,max_length=100)
     new_password : str = Field(...,min_length=1,max_length=100)
+
+class Insert_Model(BaseModel):
+    model_name : str 
+    g_rpm : int 
+    g_rpd : int 
+    g_tpm : int
+    g_tpd : int
+    provider_id : int

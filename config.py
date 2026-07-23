@@ -11,6 +11,7 @@ class Settings(BaseSettings):
 
     Secret_key : SecretStr
     Groq_api_key : SecretStr 
+    gemini_key : SecretStr
     database_url : SecretStr
     algo : str = 'HS256'
     access_token_expire_minutes : int = 30
@@ -33,6 +34,8 @@ class Settings(BaseSettings):
     s3_access_key : SecretStr | None = None
     s3_secret_access_key : SecretStr | None = None
     s3_endpoint_url: str | None = None
+
+    estimated_tokens :int =  169
 
 
 
