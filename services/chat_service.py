@@ -50,6 +50,7 @@ async def handle_chat_request(details : UserPrompt, current_api , db : AsyncSess
         text,total_token,prompt_token,response_token = await generate_retry_fallback(provider_name=provider_name,details=details)
         sta = 'SUCCESS'
         await correct_tokens(redis_client,pro_id,model_id=model_id,member_id=member_id,actual_tokens=total_token)
+        await set_cached_response(redis_client=redis_client,key=key,model_id=model_id,pro_id=pro_id,prompt_token=prompt_token,response_token=response_token,total_token=total_token,text=text)
 
 
     except Exception as e:

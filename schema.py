@@ -3,7 +3,7 @@ from pydantic import BaseModel, ConfigDict, Field,EmailStr
 class UserPrompt(BaseModel):
     prompt: str = Field(..., description="The user's prompt",max_length=1000) # will prolly remove the max_length constraint later, but for now, let's keep it to avoid groq rate limits
     model : str | None = Field(default="openai/gpt-oss-120b",description="the model sent by the user")
-    model_temp : int | None = Field(default=0,description="temperature sent by th euser for the model")
+    model_temp : float | None = Field(default=0,description="temperature sent by th euser for the model")
     system_prompt : str | None = Field(default="You are an all around Help assistant")
     max_tokens : int | None = Field(default=1024)
 
