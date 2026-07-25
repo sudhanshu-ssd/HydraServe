@@ -12,7 +12,7 @@ from sqlalchemy import select
 import hashlib
 from sqlalchemy.orm import selectinload
 import secrets
-from redis_config import redis_client
+import redis_config
 import redis.asyncio as aioredis
 
 
@@ -22,10 +22,13 @@ oauth2_schema = OAuth2PasswordBearer(tokenUrl='/token') # this will extract the 
 httpbear = HTTPBearer(auto_error=False)   # this will also extract authorization header
 api_key_header = APIKeyHeader(name="X-API-KEy",auto_error=False) # leaving this KEy typo so my Eval llm can have a field day lol 
 
-async def get_redis() -> aioredis.Redis:
-    return redis_client
 
-redis = Annotated[aioredis.Redis , Depends(get_redis)]
+async def get_redis() -> aioredis.Redis:
+    if redis_config.redis_client is None:
+        raise RuntimeError("Redis not initialized")
+    return redis_config.redis_client
+
+redis = Annotated[aioredis.Redis, Depends(get_redis)]
 database = Annotated[AsyncSession,Depends(get_db)]
 
 def hash_password(password:str):
@@ -154,4 +157,3 @@ async def get_project(current_api : get_current_api_bear) -> models.Project:
 def generate_api(prefix = "hs_",length = 32):
     api_key = secrets.token_hex(length)
     return f"{prefix}{api_key}"
-

@@ -3,19 +3,20 @@ from config import settings
 from google import genai
 from google.genai import types
 
-class _Groq:
-    def __init__(self,model:str = 'openai/gpt-oss-120b'):
+
+class GroqProvider:
+    def __init__(self):
         self.client = AsyncGroq(api_key=settings.Groq_api_key.get_secret_value())
-        self.model = model
 
     async def generate(self,user_prompt: str, 
                        system_prompt: str = "you are all around help assistant",
+                       model:str = 'openai/gpt-oss-120b',
                        temperature: float = 0,
                  max_tokens: int = 1024,
                  top_p: float = 1):
         
         response = await self.client.chat.completions.create(
-            model=self.model,
+            model=model,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
@@ -29,18 +30,19 @@ class _Groq:
 
 
 
-class Gemini:
-    def __init__(self,model:str = "gemini-3.1-flash-lite"):
+class GeminiProvider:
+    def __init__(self):
         self.client = genai.Client(api_key=settings.gemini_key.get_secret_value())
-        self.model = model
+
     async def generate(self,user_prompt: str, 
                        system_prompt: str = "you are all around help assistant",
+                       model:str = "gemini-3.1-flash-lite",
                        temperature: float = 0,
-                 max_tokens: int = 1024,
-                 top_k: float = 1):
+                       max_tokens: int = 1024,
+                       top_k: float = 1):
         
-        response = await self.client.aio.models.generate_content(model=self.model,
-                                                       contents=user_prompt,
+        response = await self.client.aio.models.generate_content(model=model,
+                                                        contents=user_prompt,
                                                        config=types.GenerateContentConfig(system_instruction=system_prompt,
                                                                                           temperature=temperature,
                                                                                           top_k=top_k,
@@ -51,9 +53,10 @@ class Gemini:
 
 
 
+Provider_dict = {'Groq':GroqProvider(),
+                 "Gemini":GeminiProvider()}
 
 
-
-#   IF THIS BECOMMES MORE THAN A PORTFOLIO PROJECT THEN WE WOULD NEED SOME KIND OF MAPPING TO MAP PROVIDERS AND MDOELS
-        
+Provider_Fallback = {"Groq": ("Gemini", "gemini-3.1-flash-lite"),
+                     "Gemini":("Groq","openai/gpt-oss-120b")}   #we will create a table once we have more providers lol
 
