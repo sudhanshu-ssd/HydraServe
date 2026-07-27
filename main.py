@@ -5,6 +5,24 @@ from routes import auth, users, projects, chat,admin
 from db import engine   
 import  redis.asyncio as aioredis
 import redis_config
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
+from opentelemetry.instrumentation.redis import RedisInstrumentor
+from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor
+from opentelemetry import trace
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import SimpleSpanProcessor,ConsoleSpanExporter
+
+provider = TracerProvider()
+processor = SimpleSpanProcessor(ConsoleSpanExporter)
+provider.add_span_processor(processor)
+trace.set_tracer_provider(provider)
+tracer = trace.get_tracer('hydraserve-tracer')
+
+SQLAlchemyInstrumentor().instrument(engine=engine.sync_engine)  # note: .sync_engine — see below
+RedisInstrumentor().instrument()
+HTTPXClientInstrumentor().instrument()
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -18,6 +36,8 @@ async def lifespan(app: FastAPI):
     await redis_config.redis_client.aclose()
 
 app = FastAPI(lifespan=lifespan)
+
+FastAPIInstrumentor.instrument_app(app)
 
 
 app.add_middleware(

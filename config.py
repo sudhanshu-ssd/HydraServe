@@ -37,6 +37,10 @@ class Settings(BaseSettings):
 
     estimated_tokens :int =  169
 
+    langfuse_secret_key : SecretStr
+    langfuse_public_key : SecretStr
+    langfuse_base_url : str = "https://hipaa.cloud.langfuse.com"
+
 
 
 

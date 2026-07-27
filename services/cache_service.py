@@ -3,7 +3,7 @@ import json
 import redis.asyncio as aioredis
 
 
-def cache_user_req(prompt:str,model:str,system_prompt:str,max_tokens:int):
+def hash_user_req(prompt:str,model:str,system_prompt:str,max_tokens:int):
     data = json.dumps(
         {
             'user_prompt':prompt,
