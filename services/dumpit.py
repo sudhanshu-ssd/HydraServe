@@ -11,7 +11,6 @@ from tenacity import retry, stop_after_attempt, wait_fixed
 from langfuse import get_client,propagate_attributes
 from opentelemetry import trace
 from opentelemetry.trace import Status, StatusCode
-from metrics import REQUEST_LATENCY,REQUESTS_TOTAL,CACHE_HITS,CACHE_MISSES,PROVIDER_LATENCY,TOKENS_USED,RATE_LIMIT_REJECTED,PROVIDER_ERRORS,FALLBACK_TOTAL
 
 
 langfuse = get_client()
@@ -35,9 +34,7 @@ async def write_log(db:AsyncSession,model_id,project_id,user_id,prompt_token,res
             log.set_attribute('latency',latency)
             log.set_attribute('status',stat)
             log.add_event('Commit the database successfully')
-            log.set_status(Status(StatusCode.OK))
-        except Exception as e:
-            log.record_exception(e)
+        except Exception:
             await db.rollback()
             log.add_event('database commit failed,roll backing')
             log.set_status(Status(StatusCode.ERROR))
@@ -47,77 +44,60 @@ async def write_log(db:AsyncSession,model_id,project_id,user_id,prompt_token,res
 async def handle_chat_request(details : UserPrompt, current_api , db : AsyncSession, redis_client:aioredis.Redis) -> str:
 
 
-    with tracer.start_as_current_span(name = "handle_chat_request") as root_span:
+    with langfuse.start_as_current_observation(as_type='span',name = "handle_chat_request") as root_span:
 
-        root_span.set_attributes({'user-id':current_api.user_id,'project_id':current_api.project_id})
+        with propagate_attributes(user_id = str(current_api.user_id) ,metadata = {"project_id":current_api.project_id}):
 
-        start = time.perf_counter()
-        pro_id = current_api.project_id
+            start = time.time()
+            pro_id = current_api.project_id
             
-        key = hash_user_req(prompt=details.prompt,model=details.model,system_prompt=details.system_prompt,max_tokens=details.max_tokens)
-        if details.model_temp < 1:
-            with tracer.start_as_current_span(name="get cached response") as cache_span:
+            key = hash_user_req(prompt=details.prompt,model=details.model,system_prompt=details.system_prompt,max_tokens=details.max_tokens)
+            if details.model_temp < 1:
+                with langfuse.start_as_current_observation(as_type="span",name='get_cached_response',input=key) as cache_span:
                     response = await get_cached_response(redis_client=redis_client,key=key)
-                    cache_span.set_attributes({"cache_hit":response is not None})
+                    cache_span.update(output={"cache_hit":response is not None})
 
-            if response:
-                    cache_span.add_event('cache hit')
-                    CACHE_HITS.inc()
-                    now=time.perf_counter() - start
+                if response:
+                    now=time.time() - start
                     await write_log(db,response['model_id'],response['project_id'],current_api.user_id,response['prompt_token'],response['response_token'],response['total_token'],latency=now ,stat="CACHED")
                     return response['text']
-            else:
-                 CACHE_MISSES.inc()
             
-        prompt_token = response_token = total_token = None
-        sta = 'FAILED'
-        stat_no = 500
+            prompt_token = response_token = total_token = None
+            sta = 'FAILED'
 
-        
-
-        with tracer.start_as_current_span(name="rate_limiting") as rate_span:
-            allowed,reason,member_id,model_id,provider_name = await is_allowed(redis_client=redis_client,model=details.model,project_id=pro_id,db=db)
-            rate_span.set_attributes({'allowed':allowed,'reason':reason,'member_id':member_id,'model_id':model_id})
-        if not allowed:
-            RATE_LIMIT_REJECTED.inc()
-            raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS,detail=f"{reason} limit reached !!!!")
+            with langfuse.start_as_current_observation(as_type="span",name="rate_limiting") as rate_span:
+                allowed,reason,member_id,model_id,provider_name = await is_allowed(redis_client=redis_client,model=details.model,project_id=pro_id,db=db)
+                rate_span.update(output={'allowed':allowed,'reason':reason},metadata={'member_id':member_id,'model_id':model_id})
+            if not allowed:
+                raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS,detail=f"{reason} limit reached !!!!")
             
-        with tracer.start_as_current_span(name="generating_response") as res:
-                    try:
-                        text,total_token,prompt_token,response_token = await generate_retry_fallback(provider_name=provider_name,details=details)
-                        sta = 'SUCCESS'
-                        stat_no = 200
-
-                    except Exception as e:
-                        res.record_exception(e)
-                        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,detail="Provider Down") from e
+            try:
+                text,total_token,prompt_token,response_token = await generate_retry_fallback(provider_name=provider_name,details=details)
+                sta = 'SUCCESS'
+            except Exception as e:
+                raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,detail="Provider Down") from e
                         
-                        
-                    finally:
-                        now=time.perf_counter() - start
-                        REQUEST_LATENCY.labels('/chat').observe(now)
-                        REQUESTS_TOTAL.labels(endpoint = '/chat',method = "POST",status = stat_no).inc()
-                        await write_log(db,model_id,pro_id,current_api.user_id,prompt_token,response_token,total_token,latency = now,stat=sta)
+            finally:
+                now=time.time() - start
+                await write_log(db,model_id,pro_id,current_api.user_id,prompt_token,response_token,total_token,latency = now,stat=sta)
 
-        with tracer.start_as_current_span(name="correcting_tokens") as correct_token_span:
+            with langfuse.start_as_current_observation(as_type="span",name="correcting_tokens") as correct_token_span:
                 try: 
                     await correct_tokens(redis_client,pro_id,model_id=model_id,member_id=member_id,actual_tokens=total_token)
                 except Exception as e:
-                    correct_token_span.record_exception(e)
-                    correct_token_span.add_event('Couldnt correct tokens')
-                    correct_token_span.set_status(Status(StatusCode.ERROR))
+                    correct_token_span.update(level='ERROR',status_message=str(e))
 
-        if details.model_temp < 1:
-                with tracer.start_as_current_span(name='set_cache_response') as set_cache_span:
+            if details.model_temp < 1:
+                with langfuse.start_as_current_observation(as_type="span",name='set_cache_response') as set_cache_span:
                     try:
-                        set_cache_span.add_event('setting the cache')
                         await set_cached_response(redis_client=redis_client,key=key,model_id=model_id,pro_id=pro_id,prompt_token=prompt_token,response_token=response_token,total_token=total_token,text=text)
                     except Exception as e:
-                        set_cache_span.record_exception(e)
-                        set_cache_span.set_status(Status(StatusCode.ERROR))
+                        set_cache_span.update(level="ERROR",status_message=str(e))
                     
 
-        return text
+            
+
+            return text
 
     
 
@@ -126,35 +106,23 @@ async def generate_retry_fallback(provider_name,details : UserPrompt):
 
     try:
         with langfuse.start_as_current_observation(as_type='span',name="provider") as pro_span:
-            s = time.perf_counter()
             text,total_token,prompt_token,response_token = await generate_response(model_name = details.model,
                                 provider_name = provider_name,
                                 user_prompt=details.prompt,
                                     system_prompt=details.system_prompt,
                                     temperature=details.model_temp,
                                     max_tokens=details.max_tokens)
-            e = time.perf_counter() - s
-            PROVIDER_LATENCY.labels(provider = provider_name,model = details.model).observe(e)
-            TOKENS_USED.labels(model = details.model,type = "input").inc(prompt_token)
-            TOKENS_USED.labels(model = details.model,type = "output").inc(response_token)
             return text,total_token,prompt_token,response_token
     except Exception as e:
-        PROVIDER_ERRORS.labels(provider = provider_name).inc()
         pro_span.update(level="ERROR",status_message="Primary provider failed!! Moving to Fallback Provider")
         with langfuse.start_as_current_observation(as_type="span",name="fallback") as fall:
             new_provider,new_model = Provider_Fallback[provider_name]
-            FALLBACK_TOTAL.labels(from_provider = provider_name,to_provider = new_provider).inc()
-            l = time.perf_counter()
             text,total_token,prompt_token,response_token = await generate_response(model_name = new_model,
                                 provider_name = new_provider,
                                 user_prompt=details.prompt,
                                     system_prompt=details.system_prompt,
                                     temperature=details.model_temp,
                                     max_tokens=details.max_tokens)
-            f = time.perf_counter() - l
-            PROVIDER_LATENCY.labels(provider =new_provider,model = new_model).observe(f)
-            TOKENS_USED.labels(model = new_model,type = "input").inc(prompt_token)
-            TOKENS_USED.labels(model = new_model,type = "output").inc(response_token)
             return text,total_token,prompt_token,response_token
         
     
@@ -177,8 +145,6 @@ async def generate_response(model_name:str ,
                                 model_name = model_name,
                                 temperature=temperature,
                                 max_tokens=max_tokens)
-        gen.update(output=text[:300],usage_details={"input":prompt_token,'output':response_token,"total_token":total_token})
-        
+        gen.update(output=text[:300],usage_details={'prompt_token':prompt_token,'response_token':response_token,"total_token":total_token})
         
         return text,total_token,prompt_token,response_token
-    

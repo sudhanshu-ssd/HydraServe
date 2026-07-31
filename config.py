@@ -41,6 +41,8 @@ class Settings(BaseSettings):
     langfuse_public_key : SecretStr
     langfuse_base_url : str = "https://hipaa.cloud.langfuse.com"
 
+    OTEL_Exporter_OTLP_Endpoint :str
+    OTEL_Exporter_OTLP_Headers : str
 
 
 
