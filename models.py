@@ -42,6 +42,7 @@ class APIKey(Base):
     __tablename__ = "api_keys"
 
     api_key_id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    name : Mapped[str] = mapped_column(String(50),nullable=False,default="hydraserve-001")
     key: Mapped[str] = mapped_column(String(100), unique=True, nullable=False) # hashed value of the api key
     user_id: Mapped[int] = mapped_column(ForeignKey("users.user_id"), nullable=False,index=True)
     project_id: Mapped[int] = mapped_column(ForeignKey("projects.project_id"), nullable=False,index=True)

@@ -101,3 +101,13 @@ class HealthResponse(BaseModel):
     uptime_seconds: int
     timestamp: datetime
     services: dict[str, str]
+
+class ListApiKeys(BaseModel):
+    name :str
+
+
+class CreateApi(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    name:str = Field(default='hydraserve-001')
+    api_key_created_at : datetime 

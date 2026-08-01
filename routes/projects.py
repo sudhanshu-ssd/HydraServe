@@ -4,8 +4,9 @@ from typing import Annotated
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 import models
-from dependencies import current_user,generate_api,hash_api
-from schema import ProjectReq,ProjectResponse,ProjectUpdate,APIresponse
+from dependencies import current_user,generate_api,hash_api,database
+from schema import ProjectReq,ProjectResponse,ProjectUpdate,APIresponse,CreateApi,ListApiKeys
+from sqlalchemy.orm import selectinload
 
 router =APIRouter(prefix='/projects',tags=['projects'])
 
@@ -45,9 +46,11 @@ async def get_all_projects(
 async def get_api_key(
     user : current_user,
     db : Annotated[AsyncSession,Depends(get_db)],
-    pro_id :int
+    pro_id :int,
+    api_name : CreateApi
     ):
 
+    api_name = CreateApi.name
     
     results = await db.execute(
         select(models.Project)
@@ -62,6 +65,7 @@ async def get_api_key(
     hashed_api_key = hash_api(api_key)
 
     new_api = models.APIKey(
+        name = api_name,
         key = hashed_api_key,
         project_id = pro_id,
         user_id = user.user_id
@@ -156,3 +160,24 @@ async def delete_api(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail=str(e))
     
     return None
+
+
+@router.get("/{project_id}/keys",response_model=ListApiKeys)
+async def list_api_keys(
+    user:current_user,
+    project_id :int,
+    db:database
+
+):
+    results = db.execute(
+        select(models.Project)
+        .options(selectinload(models.Project.api_key))
+        .where(models.Project.project_id == project_id))
+    if not results:
+        raise HTTPException(detail="No Project Found",status_code=status.HTTP_404_NOT_FOUND)
+
+    project = results.scalars().first()
+
+    return project.api_key
+    
+    

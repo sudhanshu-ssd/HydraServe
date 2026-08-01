@@ -209,4 +209,10 @@ async def reset_password(
     return {
         "message": "Password reset successfully. You can now log in with your new password.",
     }
-    
+
+
+@router.get("/me")
+async def get_username(
+    user:current_user
+):
+    return user.username

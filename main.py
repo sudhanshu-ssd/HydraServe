@@ -42,7 +42,7 @@ provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
 trace.set_tracer_provider(provider)
 
 
-from routes import auth, users, projects, chat,admin,health
+from routes import auth, users, projects, chat,admin,health,dashboard
 from db import engine  
 
 SQLAlchemyInstrumentor().instrument(engine=engine.sync_engine)  
@@ -84,6 +84,7 @@ app.include_router(projects.router)
 app.include_router(chat.router)
 app.include_router(admin.router)
 app.include_router(health.router)
+app.include_router(dashboard.router)
 
 metrics_app = make_asgi_app()
 

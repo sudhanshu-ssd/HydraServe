@@ -20,7 +20,7 @@ password_hash = PasswordHash.recommended()
 
 oauth2_schema = OAuth2PasswordBearer(tokenUrl='/token') # this will extract the token from client request's header's authorization
 httpbear = HTTPBearer(auto_error=False)   # this will also extract authorization header
-api_key_header = APIKeyHeader(name="X-API-KEy",auto_error=False) # leaving this KEy typo so my Eval llm can have a field day lol 
+api_key_header = APIKeyHeader(name="X-API-KEY",auto_error=False) # will extract the x-api-key field in http request
 
 
 async def get_redis() -> aioredis.Redis:
