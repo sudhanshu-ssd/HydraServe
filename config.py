@@ -2,7 +2,6 @@ from pydantic_settings import SettingsConfigDict,BaseSettings
 from pydantic import SecretStr
 
 
-
 class Settings(BaseSettings):
     model_config =  SettingsConfigDict(
         env_file='.env',

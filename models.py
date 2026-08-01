@@ -58,7 +58,7 @@ class Providers(Base):
     name : Mapped[str] = mapped_column(String(100), nullable=False)
     description : Mapped[str] = mapped_column(String(200), nullable=True,default="No description provided")
 
-    models : Mapped[list[Models]] = relationship(back_populates='provider',cascade="all, delete-orphan") 
+    models : Mapped[list[Models]] = relationship(back_populates='provider',cascade="all, delete-orphan")
     
 
 class Logs(Base):
@@ -74,6 +74,9 @@ class Logs(Base):
     total_token : Mapped[int] = mapped_column(Integer,nullable=True)
     latency: Mapped[float] = mapped_column(Float,nullable=False)
     status : Mapped[str] = mapped_column(String(50),nullable=False)
+    created_at : Mapped[datetime] = mapped_column(DateTime(timezone=True),default=lambda: datetime.now(UTC))
+
+    model:Mapped[Models] = relationship(back_populates='logs')
 
 
 class ResetPasswordToken(Base):
@@ -100,3 +103,4 @@ class Models(Base):
     provider_id : Mapped[int] = mapped_column(ForeignKey('providers.provider_id'),nullable=False,index=True)
 
     provider : Mapped[Providers] = relationship(back_populates="models")
+    logs : Mapped[list[Logs]] = relationship (back_populates= "model",cascade="all, delete-orphan" )

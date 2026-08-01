@@ -1,4 +1,4 @@
-from prometheus_client import Counter,Histogram,Gauge,make_asgi_app
+from prometheus_client import Counter,Histogram
 
 
 REQUESTS_TOTAL = Counter(

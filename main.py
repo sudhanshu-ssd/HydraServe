@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from app_state import APP_START_TIME
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
  
@@ -41,7 +42,7 @@ provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
 trace.set_tracer_provider(provider)
 
 
-from routes import auth, users, projects, chat,admin
+from routes import auth, users, projects, chat,admin,health
 from db import engine  
 
 SQLAlchemyInstrumentor().instrument(engine=engine.sync_engine)  
@@ -82,6 +83,7 @@ app.include_router(users.router)
 app.include_router(projects.router)
 app.include_router(chat.router)
 app.include_router(admin.router)
+app.include_router(health.router)
 
 metrics_app = make_asgi_app()
 

@@ -20,5 +20,3 @@ async def insert_model(db : database,model_input : Insert_Model):
     await db.commit()
     await db.refresh(new_model)
 
-
-# need to create same for provider ,but again idk about admin thing ,tbh i could have hardcoded it in pgadmin

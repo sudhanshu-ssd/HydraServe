@@ -1,9 +1,10 @@
 from pydantic import BaseModel, ConfigDict, Field,EmailStr
+from datetime import datetime,date
 
 class UserPrompt(BaseModel):
     prompt: str = Field(..., description="The user's prompt",max_length=1000) # will prolly remove the max_length constraint later, but for now, let's keep it to avoid groq rate limits
     model : str | None = Field(default="openai/gpt-oss-120b",description="the model sent by the user")
-    model_temp : float | None = Field(default=0,description="temperature sent by th euser for the model")
+    model_temp : float | None = Field(default=0.0,description="temperature sent by th euser for the model")
     system_prompt : str | None = Field(default="You are an all around Help assistant")
     max_tokens : int | None = Field(default=1024)
 
@@ -41,8 +42,8 @@ class APIresponse(BaseModel):
 
 
 class ProjectUpdate(BaseModel):
-    name : str | None = Field(max_length=50,min_length=1,description="Name of the project")
-    description : str | None = Field(max_length=150,min_length=1)
+    name : str | None = Field(default = None,max_length=50,min_length=1,description="Name of the project")
+    description : str | None = Field(default=None,max_length=150,min_length=1)
 
 
 class ForgotPassword(BaseModel):
@@ -63,3 +64,40 @@ class Insert_Model(BaseModel):
     g_tpm : int
     g_tpd : int
     provider_id : int
+
+class DashOverview(BaseModel):
+    projects:int
+    api_keys:int
+    requests_today:int
+    tokens_today:int
+    avg_latency:float
+    cache_hit_rate:float
+    success_rate : float
+
+class RequestHistoryItem(BaseModel):
+    request_time : datetime
+    model : str
+    provider :str
+    latency : float
+    tokens : int
+    status : str
+
+class modelusage(BaseModel):
+    model : str 
+    requests : int
+    token : int
+
+class TokenTrend(BaseModel):
+    day : date
+    tokens:int
+
+class RequestTrend(BaseModel):
+    day : date
+    requests : int
+
+class HealthResponse(BaseModel):
+    status: str
+    version: str
+    uptime_seconds: int
+    timestamp: datetime
+    services: dict[str, str]

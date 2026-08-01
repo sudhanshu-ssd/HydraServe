@@ -84,6 +84,7 @@ async def get_current_user(
     results = await db.execute(
         select(models.User)  # use selectinload here if you need listof apis and projects related to user 
         .options(selectinload(models.User.projects))
+        .options(selectinload(models.User.api_keys))
         .where(models.User.user_id == int_user_id)
     )
     user = results.scalars().first()
