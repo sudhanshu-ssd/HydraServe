@@ -23,11 +23,9 @@ async def dash_overview(
 
         func.sum(case((models.Logs.created_at >= today,models.Logs.total_token),else_= 0)).label('tokens_today'),
 
-        func.avg(models.Logs.latency).label('avg_latency'),
-
-        func.count(case((models.Logs.status == "CACHED",1),else_=None)).label('cache_hits'),
-
-        func.count(case((models.Logs.status == "SUCCESS",1),else_=None)).label("success_req")
+        func.avg(case((models.Logs.created_at >= today, models.Logs.latency), else_=None)).label('avg_latency'),
+        func.count(case(((models.Logs.created_at >= today) & (models.Logs.status == "CACHED"), 1), else_=None)).label('cache_hits'),
+        func.count(case(((models.Logs.created_at >= today) & (models.Logs.status == "SUCCESS"), 1), else_=None)).label("success_req")
     ).where(models.Logs.user_id == user.user_id))
 
     results= await db.execute(query)
