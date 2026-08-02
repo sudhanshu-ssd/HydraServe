@@ -17,7 +17,7 @@ async def sign_in_access_token(
     form_body:Annotated[OAuth2PasswordRequestForm,Depends()],
     db : Annotated[AsyncSession,Depends(get_db)]):
 
-    sign_in_user_email = str(form_body.username).lower()
+    sign_in_user_email = form_body.username.lower()
     results = await db.execute(
         select(models.User)
         .where(models.User.email == sign_in_user_email))

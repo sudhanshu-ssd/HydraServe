@@ -42,7 +42,7 @@ provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
 trace.set_tracer_provider(provider)
 
 
-from routes import auth, users, projects, chat,admin,health,dashboard
+from routes import auth, users, projects, chat,admin,health,dashboard,mod
 from db import engine  
 
 SQLAlchemyInstrumentor().instrument(engine=engine.sync_engine)  
@@ -70,7 +70,7 @@ FastAPIInstrumentor.instrument_app(app)
 
 app.add_middleware(
        CORSMiddleware,
-       allow_origins=["http://localhost:5500"],
+       allow_origins=["http://localhost:5500", "http://localhost:5173"],
        allow_credentials=True,
        allow_methods=["*"],
        allow_headers=["*"],
@@ -85,6 +85,7 @@ app.include_router(chat.router)
 app.include_router(admin.router)
 app.include_router(health.router)
 app.include_router(dashboard.router)
+app.include_router(mod.router)
 
 metrics_app = make_asgi_app()
 

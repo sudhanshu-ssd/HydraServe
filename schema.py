@@ -30,11 +30,12 @@ class RegisterResponse(User):
 
 class ProjectReq(BaseModel):
     name : str  = Field(...,max_length=50,min_length=1,description="Name of the project")
-    description : str | None = Field(default="No description provided",min_length=1,max_length=150,description="description of the project")
+    description : str | None = Field(default="No description provided",max_length=150,description="description of the project")
 
 class ProjectResponse(ProjectReq):
     model_config = ConfigDict(from_attributes=True)
-    project_id : int = Field(...,description="the id of project")
+
+    project_id: int
     
 
 class APIresponse(BaseModel):
@@ -103,11 +104,22 @@ class HealthResponse(BaseModel):
     services: dict[str, str]
 
 class ListApiKeys(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    api_key_id: int
     name :str
+    api_key_created_at : datetime 
 
 
 class CreateApi(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
 
     name:str = Field(default='hydraserve-001')
-    api_key_created_at : datetime 
+
+class ModelResponse(BaseModel):
+    model_id: int
+    model_name: str
+    provider: str
+
+    model_config = {
+        "from_attributes": True
+    }

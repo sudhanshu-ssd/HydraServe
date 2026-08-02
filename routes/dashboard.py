@@ -30,6 +30,7 @@ async def dash_overview(
 
     results= await db.execute(query)
     stats = results.mappings().one()
+    print(stats)
 
     num_req = stats["req_today"] or 0
     num_tokens = stats["tokens_today"] or 0

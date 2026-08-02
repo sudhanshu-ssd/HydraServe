@@ -39,7 +39,7 @@ async def create_project(
 async def get_all_projects(
     user : current_user,  # this is user auth 
     ):
-    return user.projects  
+    return user.projects
 
 
 @router.post("/{pro_id}/keys",response_model=APIresponse,status_code=status.HTTP_201_CREATED)
@@ -50,7 +50,7 @@ async def get_api_key(
     api_name : CreateApi
     ):
 
-    api_name = CreateApi.name
+    api_name = api_name.name
     
     results = await db.execute(
         select(models.Project)
@@ -162,22 +162,25 @@ async def delete_api(
     return None
 
 
-@router.get("/{project_id}/keys",response_model=ListApiKeys)
+@router.get("/{project_id}/keys",response_model=list[ListApiKeys])
 async def list_api_keys(
     user:current_user,
     project_id :int,
     db:database
 
 ):
-    results = db.execute(
+    results = await db.execute(
         select(models.Project)
-        .options(selectinload(models.Project.api_key))
+        .options(selectinload(models.Project.api_keys))
         .where(models.Project.project_id == project_id))
-    if not results:
-        raise HTTPException(detail="No Project Found",status_code=status.HTTP_404_NOT_FOUND)
 
     project = results.scalars().first()
 
-    return project.api_key
+    if not project:
+        raise HTTPException(detail="No Project Found",status_code=status.HTTP_404_NOT_FOUND)
+
+    
+
+    return project.api_keys
     
     

@@ -215,4 +215,4 @@ async def reset_password(
 async def get_username(
     user:current_user
 ):
-    return user.username
+    return {'username':user.username,"profile_pic":f"s3://hydraserve-api/profile_pics/{user.filename}"}
