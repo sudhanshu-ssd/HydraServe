@@ -28,15 +28,14 @@ resource = Resource.create({
 
 provider = TracerProvider(resource=resource)
 
+headers = {}
+if settings.OTEL_Exporter_OTLP_Headers:
+    headers["Authorization"] = unquote(settings.OTEL_Exporter_OTLP_Headers.replace("Authorization=",""))
+
 otlp_exporter = OTLPSpanExporter(
     endpoint=settings.OTEL_Exporter_OTLP_Endpoint + "/v1/traces",
-    headers={
-        "Authorization": unquote(settings.OTEL_Exporter_OTLP_Headers.replace(
-                "Authorization=",
-                ""
-            ))
-            }
-            )
+    headers=headers
+)
 
 provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
 trace.set_tracer_provider(provider)
@@ -55,7 +54,7 @@ HTTPXClientInstrumentor().instrument()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global redis_client
-    redis_config.redis_client = aioredis.Redis(host="localhost",port=6379,db=0,decode_responses=True)
+    redis_config.redis_client = aioredis.Redis.from_url(settings.redis_url, decode_responses=True)  
     pong = await redis_config.redis_client.ping()
     print(f"Redis connected: {pong}")  
     yield
@@ -70,7 +69,7 @@ FastAPIInstrumentor.instrument_app(app)
 
 app.add_middleware(
        CORSMiddleware,
-       allow_origins=["http://localhost:5500", "http://localhost:5173"],
+       allow_origins=[origin.strip() for origin in settings.cors_origins.split(",")],
        allow_credentials=True,
        allow_methods=["*"],
        allow_headers=["*"],

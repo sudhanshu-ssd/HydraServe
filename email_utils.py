@@ -50,7 +50,7 @@ This link will expire in half an hour.
 If you didn't request this, you can safely ignore this email.
 
 Best regards,
-The HydraServe Team
+The HydraServe
 """
 
     await send_email(

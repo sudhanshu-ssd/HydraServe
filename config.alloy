@@ -1,0 +1,57 @@
+// Scrape Prometheus metrics from FastAPI backend
+prometheus.scrape "fastapi" {
+  targets = [
+    {"__address__" = "backend:8000"},
+  ]
+  forward_to = [prometheus.remote_write.metrics_hosted_prometheus.receiver]
+  scrape_interval = "15s"
+}
+
+// Forward metrics to Grafana Cloud
+prometheus.remote_write "metrics_hosted_prometheus" {
+   endpoint {
+      name = "hosted-prometheus"
+      url  = sys.env("GRAFANA_CLOUD_PROMETHEUS_URL")
+  
+      basic_auth {
+        username = sys.env("GRAFANA_CLOUD_PROMETHEUS_USERNAME")
+        password = sys.env("GRAFANA_CLOUD_TOKEN")
+      }
+   }
+}
+
+// Receive OpenTelemetry Traces from FastAPI locally
+otelcol.receiver.otlp "otlp_receiver" {
+  grpc {
+    endpoint = "0.0.0.0:4317"
+  }
+  http {
+    endpoint = "0.0.0.0:4318"
+  }
+
+  output {
+    // Send to batch processor first!
+    traces = [otelcol.processor.batch.default.input]
+  }
+}
+
+// Batch traces for efficiency
+otelcol.processor.batch "default" {
+  output {
+    // Send batched traces to exporter
+    traces  = [otelcol.exporter.otlp.grafanacloud.input]
+  }
+}
+
+// Export traces to Grafana Cloud Tempo (OTLP)
+otelcol.exporter.otlp "grafanacloud" {
+  client {
+    endpoint = sys.env("GRAFANA_CLOUD_OTLP_ENDPOINT")
+    auth = otelcol.auth.basic.grafanacloud.handler
+  }
+}
+
+otelcol.auth.basic "grafanacloud" {
+  username = sys.env("GRAFANA_CLOUD_TEMPO_USERNAME")
+  password = sys.env("GRAFANA_CLOUD_TOKEN")
+}

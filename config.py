@@ -25,7 +25,8 @@ class Settings(BaseSettings):
     mail_from: str = "onboarding@resend.dev"
     mail_use_tls: bool = True
 
-    frontend_url: str = "http://localhost:5500"
+    frontend_url: str = "http://localhost:5173"
+    cors_origins: str = "http://localhost:5500,http://localhost:5173"
     mail_password : SecretStr  #this is your mail password
 
     s3_bucket_name :str 
@@ -41,8 +42,15 @@ class Settings(BaseSettings):
     langfuse_base_url : str = "https://hipaa.cloud.langfuse.com"
 
     OTEL_Exporter_OTLP_Endpoint :str
-    OTEL_Exporter_OTLP_Headers : str
+    OTEL_Exporter_OTLP_Headers : str = ""
 
+    admin_api_key: SecretStr 
+    GRAFANA_CLOUD_PROMETHEUS_URL : str
+    GRAFANA_CLOUD_PROMETHEUS_USERNAME :str
+    GRAFANA_CLOUD_TEMPO_USERNAME :str
+    GRAFANA_CLOUD_OTLP_ENDPOINT :str
+    GRAFANA_CLOUD_TOKEN : SecretStr
 
+    redis_url : str = "redis://localhost:6379/0"
 
 settings = Settings()
