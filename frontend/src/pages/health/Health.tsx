@@ -51,7 +51,7 @@ export function Health() {
         <Card className="bg-card/50 backdrop-blur-sm border-white/[0.04]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Gateway Status</CardTitle>
-            {data.status === 'ok' ? (
+            {data.status === 'healthy' ? (
               <CheckCircle2 className="h-4 w-4 text-emerald-500" />
             ) : (
               <XCircle className="h-4 w-4 text-destructive" />
@@ -84,17 +84,17 @@ export function Health() {
         {Object.entries(data.services).map(([service, status]) => (
           <Card key={service} className="bg-card/30 backdrop-blur-sm border-white/[0.02]">
             <CardHeader className="flex flex-row items-center gap-4 py-4">
-              <div className={`p-2 rounded-lg ${status === 'ok' ? 'bg-emerald-500/10' : 'bg-destructive/10'}`}>
+              <div className={`p-2 rounded-lg ${status === 'healthy' ? 'bg-emerald-500/10' : 'bg-destructive/10'}`}>
                 {service.toLowerCase().includes('database') || service.toLowerCase().includes('postgres') ? (
-                  <Database className={`h-5 w-5 ${status === 'ok' ? 'text-emerald-500' : 'text-destructive'}`} />
+                  <Database className={`h-5 w-5 ${status === 'healthy' ? 'text-emerald-500' : 'text-destructive'}`} />
                 ) : (
-                  <Box className={`h-5 w-5 ${status === 'ok' ? 'text-emerald-500' : 'text-destructive'}`} />
+                  <Box className={`h-5 w-5 ${status === 'healthy' ? 'text-emerald-500' : 'text-destructive'}`} />
                 )}
               </div>
               <div className="flex-1">
                 <CardTitle className="text-base capitalize">{service}</CardTitle>
-                <CardDescription className={status === 'ok' ? 'text-emerald-500/70' : 'text-destructive/70'}>
-                  {status === 'ok' ? 'Operational' : 'Degraded'}
+                <CardDescription className={status === 'healthy' ? 'text-emerald-500/70' : 'text-destructive/70'}>
+                  {status === 'healthy' ? 'Operational' : 'Degraded'}
                 </CardDescription>
               </div>
             </CardHeader>
