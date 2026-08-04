@@ -5,7 +5,7 @@ alembic
 asyncpg
 pydantic-settings
 pydantic[email]
-passlib[bcrypt]
+pwdlib[argon2]
 PyJWT
 python-multipart
 redis
@@ -24,3 +24,5 @@ opentelemetry-instrumentation-sqlalchemy
 opentelemetry-instrumentation-redis
 opentelemetry-instrumentation-httpx
 prometheus-client
+Pillow
+tenacity
