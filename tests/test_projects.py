@@ -78,7 +78,9 @@ class TestAPIKeys:
     ):
         pro_id = test_project["project_id"]
         resp = await client.post(
-            f"/projects/{pro_id}/keys", headers=auth_headers
+            f"/projects/{pro_id}/keys", 
+            headers=auth_headers,
+            json={"name": "test_key"}
         )
         assert resp.status_code == 201
         assert resp.json()["api_key"].startswith("hs_")
@@ -86,6 +88,10 @@ class TestAPIKeys:
     async def test_create_api_key_unauthorized_project(
         self, client: AsyncClient, auth_headers
     ):
-        resp = await client.post("/projects/99999/keys", headers=auth_headers)
+        resp = await client.post(
+            "/projects/99999/keys", 
+            headers=auth_headers,
+            json={"name": "test_key"}
+        )
         assert resp.status_code != 201, "Key for non-existent project must fail"
         assert resp.status_code in (401, 403, 404, 500)
