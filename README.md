@@ -90,7 +90,8 @@ All three run in production against real traffic — see the live dashboard belo
 
 ## Screenshot
 
-![HydraServe observability dashboard in Grafana Cloud, showing live API traffic, token usage, and Redis cache hit/miss rates](https://mightyspinach1144.grafana.net/dashboard/snapshot/YsuEEedQnKt71HknsqLk9euQQy1K7cUw)
+<img width="1536" height="1152" alt="HydraServe Observability-1785968535530" src="https://github.com/user-attachments/assets/e50abee4-71fa-4fd1-81f6-d0b4708f13f9" />
+
 
 ## Tech Stack
 
