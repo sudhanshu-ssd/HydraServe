@@ -1,9 +1,7 @@
-"""Tests for authentication and user registration flows."""
 from httpx import AsyncClient
 
 
 class TestRegistration:
-    """User signup — happy path and duplicate guards."""
 
     async def test_register_success(self, client: AsyncClient):
         resp = await client.post(
@@ -20,12 +18,10 @@ class TestRegistration:
     async def test_register_duplicate_username_rejected(
         self, client: AsyncClient, registered_user
     ):
-        """Duplicate username must not succeed — the app should return
-        400 (explicit check) or let the DB UNIQUE constraint reject it."""
         resp = await client.post(
             "/users/register",
             json={
-                "username": registered_user["username"],  # duplicate
+                "username": registered_user["username"],  # obv duplicate 
                 "email": "different@example.com",
                 "password": "Secure123!",
             },
@@ -36,7 +32,6 @@ class TestRegistration:
     async def test_register_duplicate_email_rejected(
         self, client: AsyncClient, registered_user
     ):
-        """Duplicate email must not succeed."""
         resp = await client.post(
             "/users/register",
             json={
@@ -50,7 +45,6 @@ class TestRegistration:
 
 
 class TestLogin:
-    """Token endpoint — correct & incorrect credentials."""
 
     async def test_login_success(self, client: AsyncClient, registered_user):
         resp = await client.post(
@@ -84,7 +78,6 @@ class TestLogin:
 
 
 class TestTokenValidation:
-    """Protected endpoints reject missing / invalid tokens."""
 
     async def test_no_token_returns_401(self, client: AsyncClient):
         resp = await client.get("/projects")

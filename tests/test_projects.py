@@ -1,9 +1,7 @@
-"""Tests for project CRUD and API-key management."""
 from httpx import AsyncClient
 
 
 class TestProjectCRUD:
-    """Create, read, update, delete projects via the REST API."""
 
     async def test_create_project(self, client: AsyncClient, auth_headers):
         resp = await client.post(
@@ -47,8 +45,6 @@ class TestProjectCRUD:
     async def test_update_other_users_project_forbidden(
         self, client: AsyncClient, test_project
     ):
-        """A second user must NOT be able to modify another user's project."""
-        # Register + login as a different user
         await client.post(
             "/users/register",
             json={
@@ -71,13 +67,11 @@ class TestProjectCRUD:
             json={"name": "Hacked", "description": "Hacked desc"},
             headers=attacker_headers,
         )
-        # Must NOT succeed — 403 on PostgreSQL, may differ on SQLite test DB
         assert resp.status_code != 200, "Cross-user project update must be rejected"
         assert resp.status_code in (403, 401, 500)
 
 
 class TestAPIKeys:
-    """API-key generation for a project."""
 
     async def test_create_api_key_returns_prefixed_key(
         self, client: AsyncClient, auth_headers, test_project
@@ -92,7 +86,6 @@ class TestAPIKeys:
     async def test_create_api_key_unauthorized_project(
         self, client: AsyncClient, auth_headers
     ):
-        """Requesting a key for a non-existent project returns an error."""
         resp = await client.post("/projects/99999/keys", headers=auth_headers)
         assert resp.status_code != 201, "Key for non-existent project must fail"
         assert resp.status_code in (401, 403, 404, 500)

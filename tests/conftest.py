@@ -1,12 +1,5 @@
-"""
-Test configuration and shared fixtures for HydraServe.
-
-Install test dependencies:
-    pip install pytest pytest-asyncio httpx aiosqlite
-"""
 import os
 
-# ── Set test environment BEFORE any application import ──────────────────
 os.environ.update(
     {
         "Secret_key": "test-secret-key-for-testing-only-32chars!",
@@ -34,13 +27,11 @@ from sqlalchemy.ext.asyncio import (
 from sqlalchemy.pool import StaticPool
 from httpx import AsyncClient, ASGITransport
 
-# Application imports — env vars are now set so Settings() will succeed
 from db import Base, get_db
 from main import app
 import redis_config
 
 
-# ── Test database (in-memory SQLite, single shared connection) ──────────
 test_engine = create_async_engine(
     "sqlite+aiosqlite://",
     connect_args={"check_same_thread": False},
@@ -59,9 +50,7 @@ async def _override_get_db():
 app.dependency_overrides[get_db] = _override_get_db
 
 
-# ── Helpers ─────────────────────────────────────────────────────────────
 def _make_mock_redis() -> AsyncMock:
-    """Return a mock Redis client that satisfies lifespan expectations."""
     mock = AsyncMock()
     mock.ping.return_value = True
     mock.get.return_value = None
@@ -70,10 +59,8 @@ def _make_mock_redis() -> AsyncMock:
     return mock
 
 
-# ── Fixtures ────────────────────────────────────────────────────────────
 @pytest_asyncio.fixture(autouse=True)
 async def _setup_tables():
-    """Create all tables before each test, drop them after."""
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     yield
@@ -83,7 +70,6 @@ async def _setup_tables():
 
 @pytest_asyncio.fixture()
 async def mock_redis():
-    """Provide a mock Redis and wire it into redis_config."""
     mock = _make_mock_redis()
     redis_config.redis_client = mock
     yield mock
@@ -92,7 +78,6 @@ async def mock_redis():
 
 @pytest_asyncio.fixture()
 async def client(mock_redis):
-    """Async HTTP test client with mocked Redis lifespan."""
     with patch("main.aioredis.Redis", return_value=mock_redis):
         transport = ASGITransport(app=app)
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
@@ -101,14 +86,12 @@ async def client(mock_redis):
 
 @pytest_asyncio.fixture()
 async def db_session() -> AsyncSession:
-    """Direct database session for setup / assertions in tests."""
     async with TestSessionLocal() as session:
         yield session
 
 
 @pytest_asyncio.fixture()
 async def registered_user(client: AsyncClient) -> dict:
-    """Register a test user; returns the credentials dict."""
     creds = {
         "username": "testuser",
         "email": "test@example.com",
@@ -121,7 +104,6 @@ async def registered_user(client: AsyncClient) -> dict:
 
 @pytest_asyncio.fixture()
 async def auth_headers(client: AsyncClient, registered_user: dict) -> dict:
-    """Obtain Bearer-token headers for the registered test user."""
     resp = await client.post(
         "/token",
         data={
@@ -136,7 +118,6 @@ async def auth_headers(client: AsyncClient, registered_user: dict) -> dict:
 
 @pytest_asyncio.fixture()
 async def test_project(client: AsyncClient, auth_headers: dict) -> dict:
-    """Create and return a project belonging to the test user."""
     resp = await client.post(
         "/projects",
         json={"name": "TestProject", "description": "Integration test project"},

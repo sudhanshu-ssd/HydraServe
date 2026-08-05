@@ -1,9 +1,3 @@
-"""
-Unit tests for core auth utilities.
-
-These are pure-function tests — no database, no network, no async.
-They validate password hashing, JWT token lifecycle, and API-key helpers.
-"""
 from dependencies import (
     hash_password,
     verify_password,
@@ -15,7 +9,6 @@ from dependencies import (
 
 
 class TestPasswordHashing:
-    """pwdlib password hash + verify round-trips."""
 
     def test_hash_and_verify_succeeds(self):
         raw = "MySecretPassword123!"
@@ -35,7 +28,6 @@ class TestPasswordHashing:
 
 
 class TestJWT:
-    """JWT creation and verification."""
 
     def test_create_and_verify_roundtrip(self):
         token = create_access_token(data={"sub": "42"})
@@ -46,13 +38,11 @@ class TestJWT:
 
     def test_tampered_token_returns_none(self):
         token = create_access_token(data={"sub": "42"})
-        # Flip the last few characters to simulate tampering
         tampered = token[:-4] + "XXXX"
         assert verify_access_token(tampered) is None
 
 
 class TestAPIKeyUtilities:
-    """API-key generation and hashing helpers."""
 
     def test_hash_api_is_deterministic(self):
         assert hash_api("my_key") == hash_api("my_key")

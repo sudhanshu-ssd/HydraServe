@@ -1,8 +1,3 @@
-"""
-Unit tests for the Redis cache service.
-
-All Redis interactions are mocked — no running Redis instance required.
-"""
 import json
 from unittest.mock import AsyncMock
 
@@ -14,7 +9,6 @@ from services.cache_service import (
 
 
 class TestHashUserReq:
-    """Cache-key generation from request parameters."""
 
     def test_same_inputs_produce_same_hash(self):
         h1 = hash_user_req("hello", "gpt-4", "be helpful", 512)
@@ -37,7 +31,6 @@ class TestHashUserReq:
 
 
 class TestCacheGetSet:
-    """Reading and writing cached LLM responses."""
 
     async def test_cache_hit_returns_stored_data(self):
         mock_redis = AsyncMock()
@@ -86,5 +79,4 @@ class TestCacheGetSet:
         assert stored["text"] == "generated answer"
         assert stored["total_token"] == 40
         assert stored["model_id"] == 1
-        # TTL should be set (ex=172800 = 2 days)
         assert args[1]["ex"] == 172800
