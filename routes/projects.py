@@ -125,7 +125,7 @@ async def del_project(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Project Not Found")
 
     if project.user_id != user.user_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="User not authorized for this peoject")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="User not authorized for this project")
 
     try:
         await db.delete(project)
@@ -175,6 +175,9 @@ async def list_api_keys(
         .where(models.Project.project_id == project_id))
 
     project = results.scalars().first()
+
+    if project.user_id != user.user_id:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="User not authorized for this project")
 
     if not project:
         raise HTTPException(detail="No Project Found",status_code=status.HTTP_404_NOT_FOUND)
