@@ -119,6 +119,9 @@ async def token_trend(
     user: current_user
 ):
     seven_days = date.today() - timedelta(days=6)
+    
+    date_list = [seven_days + timedelta(days=x) for x in range(7)]
+    trend_dict = {str(d): 0 for d in date_list}
 
     query = (
         select(
@@ -135,12 +138,13 @@ async def token_trend(
 
     rows = (await db.execute(query)).mappings().all()
 
+    for row in rows:
+        if row["day"]:
+            trend_dict[str(row["day"])] = row["tokens"] or 0
+
     return [
-        TokenTrend(
-            day=row["day"],
-            tokens=row["tokens"] or 0
-        )
-        for row in rows
+        TokenTrend(day=day, tokens=tokens)
+        for day, tokens in trend_dict.items()
     ]
 
 
@@ -150,6 +154,9 @@ async def request_trend(
     user: current_user
 ):
     seven_days = date.today() - timedelta(days=6)
+
+    date_list = [seven_days + timedelta(days=x) for x in range(7)]
+    trend_dict = {str(d): 0 for d in date_list}
 
     query = (
         select(
@@ -166,12 +173,13 @@ async def request_trend(
 
     rows = (await db.execute(query)).mappings().all()
 
+    for row in rows:
+        if row["day"]:
+            trend_dict[str(row["day"])] = row["requests"] or 0
+
     return [
-        RequestTrend(
-            day=row["day"],
-            requests=row["requests"]
-        )
-        for row in rows
+        RequestTrend(day=day, requests=requests)
+        for day, requests in trend_dict.items()
     ]
 
 
