@@ -2,7 +2,7 @@ from groq import AsyncGroq
 from config import settings
 from google import genai
 from google.genai import types
-
+import asyncio
 
 class GroqProvider:
     def __init__(self):
@@ -52,11 +52,24 @@ class GeminiProvider:
         return response.text,response.usage_metadata.total_token_count,response.usage_metadata.prompt_token_count,response.usage_metadata.candidates_token_count
 
 
+class MockProvider:
+    async def generate(self,user_prompt :str,
+                       system_prompt : str = "u are a mock provider",
+                       model_name : str = "mock-llm",
+                       temperature : float = 0,
+                       max_tokens : int = 1024,
+                       top_k :float = 1):
+        
+        await asyncio.sleep(0.05)
+
+        return 'this is mock response',100,50,50
 
 Provider_dict = {'Groq':GroqProvider(),
-                 "Gemini":GeminiProvider()}
+                 "Gemini":GeminiProvider(),
+                 "Mock":MockProvider()}
 
 
 Provider_Fallback = {"Groq": ("Gemini", "gemini-3.1-flash-lite"),
-                     "Gemini":("Groq","openai/gpt-oss-120b")}   #we will create a table once we have more providers lol
+                     "Gemini":("Groq","openai/gpt-oss-120b"),
+                     "Mock":("Mock","mock-llm-fallback")}   # will create a table once we have more providers lol
 

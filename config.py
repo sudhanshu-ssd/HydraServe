@@ -52,5 +52,6 @@ class Settings(BaseSettings):
     GRAFANA_CLOUD_TOKEN : SecretStr
 
     redis_url : str = "redis://localhost:6379/0"
+    mock_api : SecretStr
 
 settings = Settings()

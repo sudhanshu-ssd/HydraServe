@@ -7,7 +7,10 @@ load_dotenv()
 
 DATABASE_URL = settings.database_url.get_secret_value()
 
-engine = create_async_engine(DATABASE_URL)
+engine = create_async_engine(
+    DATABASE_URL,
+    pool_pre_ping=True,
+)
 
 asyncsessionlocal = async_sessionmaker(
     bind=engine,
