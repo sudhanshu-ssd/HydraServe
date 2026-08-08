@@ -43,7 +43,7 @@
     --card-foreground: 0 0% 98%;
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
-    --primary: 252 82% 64%; /* Indigo/Purple */
+    --primary: 221 83% 53%; /* Sharp Blue */
     --primary-foreground: 0 0% 98%;
     --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
@@ -55,8 +55,8 @@
     --destructive-foreground: 0 0% 98%;
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
-    --ring: 252 82% 64%;
-    --radius: 0.5rem;
+    --ring: 221 83% 53%;
+    --radius: 0.25rem;
   }
 }
 

@@ -55,7 +55,7 @@ export function Projects() {
           {isLoading ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
-                <Card key={i} className="bg-card/30 border-white/[0.04] h-24 animate-pulse" />
+                <div key={i} className="bg-card border border-white/[0.04] rounded-lg h-24 animate-pulse" />
               ))}
             </div>
           ) : (
@@ -64,8 +64,8 @@ export function Projects() {
                 key={p.project_id}
                 className={`cursor-pointer transition-colors border-white/[0.04] ${
                   selectedProjectId === p.project_id
-                    ? 'bg-primary/10 border-primary/30'
-                    : 'bg-card/50 hover:bg-white/[0.02]'
+                    ? 'bg-primary/5 border-primary/30'
+                    : 'bg-card hover:bg-white/[0.02]'
                 }`}
                 onClick={() => setSelectedProjectId(p.project_id)}
               >
@@ -110,8 +110,13 @@ export function Projects() {
             ))
           )}
           {projects?.length === 0 && !isLoading && (
-            <div className="text-center py-12 text-muted-foreground bg-card/20 rounded-lg border border-dashed border-white/[0.1]">
-              No projects found. Create one to get started.
+            <div className="text-center py-12 px-4 text-muted-foreground bg-card/20 rounded-lg border border-dashed border-white/[0.1]">
+              <FolderKanban className="h-8 w-8 mx-auto opacity-50 mb-3" />
+              <p className="text-sm font-medium text-foreground">No projects found</p>
+              <p className="text-xs mt-1 mb-4">Create a project to group your API keys and monitor usage.</p>
+              <Button onClick={handleCreate} size="sm" variant="outline">
+                Create Project
+              </Button>
             </div>
           )}
         </div>
@@ -125,10 +130,11 @@ export function Projects() {
             <ApiKeys projectId={selectedProjectId} />
           </div>
         ) : (
-          <div className="h-full flex items-center justify-center border border-dashed border-white/[0.1] rounded-xl bg-card/10">
-            <div className="text-center text-muted-foreground space-y-2">
+          <div className="h-full flex items-center justify-center border border-dashed border-white/[0.1] rounded-xl bg-card">
+            <div className="text-center text-muted-foreground space-y-2 max-w-sm px-4">
               <FolderKanban className="h-10 w-10 mx-auto opacity-20" />
-              <p>Select a project from the list to view its API keys</p>
+              <h4 className="font-medium text-foreground">No project selected</h4>
+              <p className="text-sm">Select a project from the sidebar to manage its API keys and view credentials.</p>
             </div>
           </div>
         )}

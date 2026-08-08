@@ -13,50 +13,50 @@ export function OverviewCards({ data, isLoading }: OverviewCardsProps) {
       title: 'Total Projects',
       value: data?.projects || 0,
       icon: LayoutDashboard,
-      color: 'text-blue-500',
+      color: 'text-muted-foreground',
     },
     {
       title: 'Active API Keys',
       value: data?.api_keys || 0,
       icon: Key,
-      color: 'text-amber-500',
+      color: 'text-muted-foreground',
     },
     {
       title: 'Requests Today',
       value: data?.requests_today || 0,
       icon: Activity,
-      color: 'text-emerald-500',
+      color: 'text-muted-foreground',
     },
     {
       title: 'Tokens Today',
       value: data?.tokens_today || 0,
       icon: Zap,
-      color: 'text-purple-500',
+      color: 'text-muted-foreground',
     },
     {
       title: 'Avg Latency',
       value: `${data?.avg_latency?.toFixed(2) || 0}s`,
       icon: Clock,
-      color: 'text-pink-500',
+      color: 'text-muted-foreground',
     },
     {
       title: 'Cache Hit Rate',
       value: `${(data?.cache_hit_rate || 0).toFixed(1)}%`,
       icon: Database,
-      color: 'text-cyan-500',
+      color: 'text-muted-foreground',
     },
     {
       title: 'Success Rate',
       value: `${(data?.success_rate || 0).toFixed(1)}%`,
       icon: ShieldCheck,
-      color: 'text-green-500',
+      color: 'text-muted-foreground',
     },
   ];
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
       {cards.map((card, i) => (
-        <Card key={i} className="bg-card/50 backdrop-blur-sm border-white/[0.04]">
+        <Card key={i} className="bg-card border-white/[0.08]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-xs font-medium text-muted-foreground">
               {card.title}

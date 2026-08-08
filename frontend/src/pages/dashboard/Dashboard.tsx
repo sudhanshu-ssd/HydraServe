@@ -40,7 +40,7 @@ export function Dashboard() {
       <OverviewCards data={overview} isLoading={overviewLoading} />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4 bg-card/50 backdrop-blur-sm border-white/[0.04]">
+        <Card className="col-span-4 bg-card border-white/[0.08]">
           <CardHeader>
             <CardTitle>Request & Token Trends</CardTitle>
           </CardHeader>
@@ -60,7 +60,7 @@ export function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="col-span-3 bg-card/50 backdrop-blur-sm border-white/[0.04]">
+        <Card className="col-span-3 bg-card border-white/[0.08]">
           <CardHeader>
             <CardTitle>Model Usage</CardTitle>
           </CardHeader>
@@ -80,7 +80,7 @@ export function Dashboard() {
         </Card>
       </div>
 
-      <Card className="bg-card/50 backdrop-blur-sm border-white/[0.04]">
+      <Card className="bg-card border-white/[0.08]">
         <CardHeader>
           <CardTitle>Recent Requests</CardTitle>
         </CardHeader>
@@ -106,11 +106,14 @@ export function Dashboard() {
                     <td className="px-4 py-3">{log.latency.toFixed(2)}s</td>
                     <td className="px-4 py-3">{log.tokens}</td>
                     <td className="px-4 py-3">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        log.status === 'success' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-destructive/10 text-destructive'
-                      }`}>
-                        {log.status}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <div className={`h-2 w-2 rounded-full ${
+                          log.status === 'success' ? 'bg-emerald-500' : 'bg-destructive'
+                        }`} />
+                        <span className="text-xs font-medium text-muted-foreground capitalize">
+                          {log.status}
+                        </span>
+                      </div>
                     </td>
                   </tr>
                 ))}

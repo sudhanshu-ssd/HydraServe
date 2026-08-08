@@ -10,8 +10,8 @@ import {
   LogOut,
   Menu,
   X,
-  Zap
 } from 'lucide-react';
+import { Dragon } from '../components/icons/Dragon';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import { Button } from '../components/ui/button';
 import { userApi } from '../api/user';
@@ -80,14 +80,14 @@ export function DashboardLayout() {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-white/[0.06] bg-card/80 backdrop-blur-xl transition-transform duration-300 lg:static lg:translate-x-0',
+          'fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-white/[0.06] bg-card transition-transform duration-300 lg:static lg:translate-x-0',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
         {/* Brand */}
-        <div className="flex h-16 items-center gap-2.5 border-b border-white/[0.06] px-6">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600">
-            <Zap className="h-4 w-4 text-white" />
+        <div className="flex h-16 items-center gap-3 border-b border-white/[0.06] px-6">
+          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
+            <Dragon className="h-5 w-5" />
           </div>
           <span className="text-lg font-semibold tracking-tight text-foreground">HydraServe</span>
         </div>
@@ -123,7 +123,7 @@ export function DashboardLayout() {
               onClick={() => setProfileOpen(true)}
               className="flex flex-1 items-center gap-3 rounded-lg p-2 text-left transition-colors hover:bg-white/[0.04]"
             >
-              <div className="flex h-8 w-8 overflow-hidden items-center justify-center rounded-full bg-gradient-to-br from-indigo-500/20 to-purple-500/20 text-xs font-semibold text-primary">
+              <div className="flex h-8 w-8 overflow-hidden items-center justify-center rounded-md bg-muted text-xs font-semibold text-foreground">
                 {avatarUrl ? (
                   <img src={avatarUrl} alt={username || 'User'} className="h-full w-full object-cover" />
                 ) : (
@@ -162,7 +162,7 @@ export function DashboardLayout() {
       </div>
 
       <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
-        <DialogContent className="bg-card/95 backdrop-blur-xl border-white/[0.08] sm:max-w-[425px]">
+        <DialogContent className="bg-card border-white/[0.08] sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Profile Settings</DialogTitle>
             <DialogDescription>
@@ -171,7 +171,7 @@ export function DashboardLayout() {
           </DialogHeader>
           <div className="flex flex-col gap-4 py-4">
             <div className="flex items-center justify-center">
-              <div className="flex h-24 w-24 overflow-hidden items-center justify-center rounded-full bg-gradient-to-br from-indigo-500/20 to-purple-500/20 text-3xl font-semibold text-primary">
+              <div className="flex h-24 w-24 overflow-hidden items-center justify-center rounded-md bg-muted text-3xl font-semibold text-foreground">
                 {avatarUrl ? (
                   <img src={avatarUrl} alt={username || 'User'} className="h-full w-full object-cover" />
                 ) : (

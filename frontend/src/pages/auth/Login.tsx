@@ -8,7 +8,7 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../components/ui/card';
-import { Zap } from 'lucide-react';
+import { Dragon } from '../../components/icons/Dragon';
 
 const loginSchema = z.object({
   username: z.string().email('Please enter a valid email address'),
@@ -43,10 +43,10 @@ export function Login() {
   };
 
   return (
-    <Card className="border-white/[0.08] bg-card/50 shadow-2xl backdrop-blur-xl">
+    <Card className="border-white/[0.08] shadow-sm">
       <CardHeader className="space-y-2 text-center">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 lg:hidden mb-4">
-          <Zap className="h-6 w-6 text-white" />
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-md bg-primary text-primary-foreground lg:hidden mb-4">
+          <Dragon className="h-6 w-6" />
         </div>
         <CardTitle className="text-2xl font-bold tracking-tight">Welcome back</CardTitle>
         <CardDescription>Enter your credentials to access your gateway</CardDescription>
