@@ -61,6 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     localStorage.removeItem('access_token');
+    localStorage.removeItem('playground_api_key');
     setIsAuthenticated(false);
     setUsername(null);
     setProfilePic(null);
